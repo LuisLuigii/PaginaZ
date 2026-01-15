@@ -6,14 +6,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Montserrat:wght@300;500&display=swap" rel="stylesheet">
 
 <style>
-/* RESET */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* BODY */
 body {
   height: 100vh;
   background: radial-gradient(circle at bottom, #3b0000, #000);
@@ -22,11 +20,10 @@ body {
   overflow: hidden;
 }
 
-/* FUEGO DE FONDO */
+/* FONDO DE FUEGO */
 .fire {
   position: fixed;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background:
     radial-gradient(circle at 50% 90%, rgba(255,80,0,0.6), transparent 60%),
     radial-gradient(circle at 30% 95%, rgba(255,140,0,0.5), transparent 65%),
@@ -40,68 +37,83 @@ body {
   to { filter: blur(18px) brightness(1.4); }
 }
 
-/* CONTENEDOR */
-.container {
-  text-align: center;
-  padding: 80px 20px;
+canvas {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
 }
 
-/* TITULO */
+.container {
+  text-align: center;
+  padding-top: 50px;
+}
+
 h1 {
   font-family: 'Creepster', cursive;
   font-size: 4rem;
   color: #ff2a00;
-  text-shadow: 0 0 15px #ff0000, 0 0 30px #ff6a00;
-  animation: flicker 3s infinite;
+  text-shadow: 0 0 20px #ff0000;
 }
 
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
-}
-
-/* SUBTITULO */
 p {
-  margin-top: 20px;
-  font-size: 1.2rem;
+  margin-top: 10px;
   color: #ffb199;
-  text-shadow: 0 0 10px rgba(255,80,0,0.5);
 }
 
-/* BOTON */
+/* IMAGEN CENTRAL */
+.image-box {
+  position: relative;
+  width: 300px;
+  height: 400px;
+  margin: 40px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(255,80,0,0.6);
+}
+
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.6s ease;
+}
+
+/* ANIMACIÓN DE LLAMAS */
+.image-box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at bottom,
+    rgba(255,80,0,0.8),
+    rgba(255,0,0,0.6),
+    transparent 70%);
+  opacity: 0;
+  animation: none;
+}
+
+.image-box.burning::after {
+  animation: flames 0.8s ease-out forwards;
+}
+
+@keyframes flames {
+  0% { opacity: 0; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
 button {
-  margin-top: 40px;
   padding: 15px 40px;
-  font-size: 1rem;
   border: none;
   border-radius: 30px;
   background: linear-gradient(45deg, #ff0000, #ff7b00);
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 0 20px #ff4500;
-  transition: transform 0.3s, box-shadow 0.3s;
+  font-size: 1rem;
+  box-shadow: 0 0 25px #ff4500;
 }
 
 button:hover {
   transform: scale(1.1);
-  box-shadow: 0 0 35px #ff0000;
-}
-
-/* PARTICULAS */
-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
-}
-
-/* DEMONIO DECORATIVO */
-.demon {
-  position: absolute;
-  bottom: 0;
-  right: 5%;
-  font-size: 8rem;
-  opacity: 0.15;
 }
 </style>
 </head>
@@ -113,75 +125,67 @@ canvas {
 
 <div class="container">
   <h1>Zorrita.com</h1>
-  <p>El reto es besartela y adivinar a quien de los 3 se la habia chupado antes...</p>
-  <button onclick="invocar()">Invocar Demonio</button>
+  <p>El reto es besártela y adivinar a quién de los 3 se la habia chupado antes</p>
+
+  <!-- IMAGEN -->
+  <div class="image-box" id="imageBox">
+    <img id="mainImage" src="img/zorrita1.jpg">
+  </div>
+
+  <button onclick="invocar()">Invocar Zorrita</button>
 </div>
 
-<div class="demon">😈</div>
-
 <script>
-/* MENSAJE */
+/* CAMBIO DE IMÁGENES */
+const images = [
+  "img/zorrita1.jpeg",
+  "img/zorrita2.jpeg"
+];
+
+let current = 0;
+const img = document.getElementById("mainImage");
+const box = document.getElementById("imageBox");
+
 function invocar() {
-  alert("🔥 Has despertado algo del inframundo...");
+  box.classList.add("burning");
+
+  setTimeout(() => {
+    current = (current + 1) % images.length;
+    img.src = images[current];
+    box.classList.remove("burning");
+  }, 400);
 }
 
-/* PARTICULAS DE FUEGO */
+/* PARTICULAS */
 const canvas = document.getElementById("particles");
 const ctx = canvas.getContext("2d");
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 
 let particles = [];
-
-class Particle {
-  constructor() {
-    this.x = Math.random() * canvas.width;
-    this.y = canvas.height + Math.random() * 100;
-    this.size = Math.random() * 3 + 1;
-    this.speedY = Math.random() * 2 + 0.5;
-    this.color = `rgba(255, ${Math.random()*150}, 0, 0.8)`;
-  }
-  update() {
-    this.y -= this.speedY;
-    if (this.y < 0) {
-      this.y = canvas.height;
-      this.x = Math.random() * canvas.width;
-    }
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.fill();
-  }
-}
-
-function initParticles() {
-  particles = [];
-  for (let i = 0; i < 200; i++) {
-    particles.push(new Particle());
-  }
-}
-
-function animateParticles() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => {
-    p.update();
-    p.draw();
+for (let i = 0; i < 180; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: canvas.height + Math.random() * 200,
+    s: Math.random() * 3 + 1,
+    v: Math.random() * 2 + 0.5
   });
-  requestAnimationFrame(animateParticles);
 }
 
-initParticles();
-animateParticles();
-
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
+function animate() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p => {
+    p.y -= p.v;
+    if (p.y < 0) p.y = canvas.height;
+    ctx.fillStyle = "rgba(255,80,0,0.7)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  requestAnimationFrame(animate);
+}
+animate();
 </script>
 
 </body>
 </html>
-
