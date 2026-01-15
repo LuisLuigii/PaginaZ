@@ -152,6 +152,9 @@ button:hover {
 <div class="fire"></div>
 <canvas id="particles"></canvas>
 
+<!-- AUDIO -->
+<audio id="sound" src="zorrita.mp3" preload="auto"></audio>
+
 <div class="container">
   <h1>Zorrita.com</h1>
   <p>El reto es besártela y adivinar a quién de los 3 se la había chupado antes</p>
@@ -174,9 +177,14 @@ const images = [
 let current = 0;
 const img = document.getElementById("mainImage");
 const box = document.getElementById("imageBox");
+const sound = document.getElementById("sound");
 
-/* CAMBIO CON FUEGO */
+/* CAMBIO CON FUEGO + AUDIO */
 function invocar() {
+  // reinicia y reproduce audio
+  sound.currentTime = 0;
+  sound.play();
+
   box.classList.add("burning");
 
   setTimeout(() => {
